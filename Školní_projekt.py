@@ -20,24 +20,31 @@ BLUE = (0, 0, 255)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Arkanoid")
 
-# Pálka
-paddle = pygame.Rect(WIDTH // 2 - 60, HEIGHT - 20, 120, 10)
 
-# Míček
-ball = pygame.Rect(WIDTH // 2 - 10, HEIGHT // 2, 20, 20)
-ball_dx, ball_dy = BALL_SPEED, -BALL_SPEED
+def reset_game():
+    global ball, ball_dx, ball_dy, paddle
+    paddle = pygame.Rect(WIDTH // 2 - 60, HEIGHT - 20, 120, 10)
+    ball = pygame.Rect(WIDTH // 2 - 10, HEIGHT // 2, 20, 20)
+    ball_dx, ball_dy = BALL_SPEED, -BALL_SPEED
+
+
+# Pálka a míček
+reset_game()
 
 # Bloky
 blocks = [pygame.Rect(col * BLOCK_WIDTH, row * BLOCK_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT) for row in range(BLOCK_ROWS) for
           col in range(BLOCK_COLS)]
+block_colors = [(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)) for _ in blocks]
 
 
 def draw_objects():
     screen.fill(WHITE)
     pygame.draw.rect(screen, BLUE, paddle)
     pygame.draw.ellipse(screen, RED, ball)
-    for block in blocks:
-        pygame.draw.rect(screen, (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)), block)
+
+    for i, block in enumerate(blocks):
+        pygame.draw.rect(screen, block_colors[i], block)
+
     pygame.display.flip()
 
 
@@ -71,14 +78,17 @@ while running:
         ball_dy = -BALL_SPEED
 
     # Kolize s bloky
-    for block in blocks[:]:
+    for i, block in enumerate(blocks[:]):
         if ball.colliderect(block):
-            blocks.remove(block)
+            blocks.pop(i)
+            block_colors.pop(i)
             ball_dy = -ball_dy
             break
 
-    # Game over podmínka
+    # Reset hry místo ukončení
     if ball.bottom >= HEIGHT:
-        running = False
+        reset_game()
 
     draw_objects()
+
+pygame.quit()
